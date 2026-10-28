@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Track expenses, manage income and monthly budgets.">
+  <title>Personal Expense Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#dashboard" aria-label="ExpenseFlow home">
+        <span class="brand-icon">₹</span>
+        <span>Expense<span class="brand-light">Flow</span></span>
+      </a>
+
+      <p class="nav-label">WORKSPACE</p>
+      <nav class="navigation" aria-label="Main navigation">
+        <a class="nav-link active" href="#dashboard" data-page="dashboard">
+          <span>▦</span> Dashboard
+        </a>
+        <a class="nav-link" href="#expenses" data-page="expenses">
+          <span>↘</span> Expenses
+        </a>
+        <a class="nav-link" href="#income" data-page="income">
+          <span>↗</span> Income
+        </a>
+        <a class="nav-link" href="#budgets" data-page="budgets">
+          <span>◷</span> Budgets
+        </a>
+        <a class="nav-link" href="#reports" data-page="reports">
+          <span>▥</span> Reports
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="tip-card">
+          <span class="tip-icon">✦</span>
+          <h3>Small steps, better savings.</h3>
+          <p>Track your spending to understand your money habits.</p>
+        </div>
+        <p class="sidebar-footer">Personal Expense Tracker · v1.0</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-button" id="menuButton"
+            type="button" aria-label="Toggle navigation">☰</button>
+          <div>
+            <p class="eyebrow">YOUR FINANCIAL SPACE</p>
+            <h1 id="pageTitle">Dashboard</h1>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="month-picker">
+            <span>Month</span>
+            <input type="month" id="monthPicker">
+          </label>
+          <button class="button button-primary" id="quickAddButton"
+            type="button">+ Add expense</button>
+        </div>
+      </header>
+
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section class="page active" id="page-dashboard">
+        <div class="welcome-row">
+          <div>
+            <h2>Your money, made clearer.</h2>
+            <p class="muted">Here's your financial overview for the selected month.</p>
+          </div>
+          <span class="date-pill" id="todayLabel"></span>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card balance-card">
+            <div class="stat-heading">
+              <span>Net balance</span>
+              <span class="stat-icon">₹</span>
+            </div>
+            <p class="stat-value" id="balanceValue">₹0.00</p>
+            <p class="stat-caption">Income minus expenses</p>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Total income</span>
+              <span class="stat-icon income-icon">↗</span>
+            </div>
+            <p class="stat-value" id="incomeValue">₹0.00</p>
+            <p class="stat-caption">Money received this month</p>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Total expenses</span>
+              <span class="stat-icon expense-icon">↘</span>
+            </div>
+            <p class="stat-value" id="expenseValue">₹0.00</p>
+            <p class="stat-caption">Money spent this month</p>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Budget remaining</span>
+              <span class="stat-icon budget-icon">◷</span>
+            </div>
+            <p class="stat-value" id="budgetValue">—</p>
+            <p class="stat-caption" id="budgetCaption">Your monthly budget</p>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Spending by category</h3>
+                <p class="muted">Where your money goes</p>
+              </div>
+              <a href="#reports" class="text-link">View report →</a>
+            </div>
+            <div id="categoryChart" class="category-chart">
+              <p class="empty-state">Your category report will appear here.</p>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Budget overview</h3>
+                <p class="muted">Your spending limits</p>
+              </div>
+              <a href="#budgets" class="text-link">Manage →</a>
+            </div>
+            <div id="budgetOverview">
+              <p class="empty-state">No budgets to display yet.</p>
+            </div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Recent expenses</h3>
+              <p class="muted">Your latest recorded spending</p>
+            </div>
+            <a href="#expenses" class="text-link">View all →</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th class="align-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="recentExpenses">
+                <tr><td colspan="4" class="empty-state">Loading expenses...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="page" id="page-expenses">
+        <div class="section-intro">
+          <div>
+            <h2>Expense management</h2>
+            <p class="muted">Record and organize your everyday spending.</p>
+          </div>
+        </div>
+
+        <article class="panel form-panel">
+          <div class="panel-header">
+            <div>
+              <h3 id="expenseFormTitle">Add an expense</h3>
+              <p class="muted">Fields marked * are required.</p>
+            </div>
+          </div>
+
+          <form id="expenseForm" class="form-grid">
+            <input type="hidden" id="expenseId">
+
+            <label class="field">
+              <span>Description *</span>
+              <input id="expenseDescription" type="text" maxlength="200"
+                placeholder="e.g. Lunch with friends" required>
+            </label>
+
+            <label class="field">
+              <span>Amount (₹) *</span>
+              <input id="expenseAmount" type="number" min="0.01"
+                max="1000000000" step="0.01" placeholder="0.00" required>
+            </label>
+
+            <label class="field">
+              <span>Category *</span>
+              <select id="expenseCategory" required>
+                <option value="">Choose a category</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Date *</span>
+              <input id="expenseDate" type="date" required>
+            </label>
+
+            <div class="form-actions">
+              <button class="button button-primary" id="expenseSubmit"
+                type="submit">Save expense</button>
+              <button class="button button-secondary" id="expenseCancel"
+                type="button" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>All expenses</h3>
+              <p class="muted">Filter and manage your expense records.</p>
+            </div>
+            <span class="count-pill" id="expenseCount">0 records</span>
+          </div>
+
+          <div class="filter-row">
+            <input id="expenseSearch" type="search"
+              placeholder="Search descriptions..." aria-label="Search expenses">
+            <select id="expenseFilterCategory" aria-label="Filter by category">
+              <option value="">All categories</option>
+            </select>
+            <input id="expenseFilterFrom" type="date" aria-label="From date">
+            <input id="expenseFilterTo" type="date" aria-label="To date">
+            <button class="button button-secondary" id="clearExpenseFilters"
+              type="button">Clear filters</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th class="align-right">Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expenseTableBody">
+                <tr><td colspan="5" class="empty-state">Loading expenses...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="page" id="page-income">
+        <div class="section-intro">
+          <div>
+            <h2>Income management</h2>
+            <p class="muted">Keep track of the money you receive.</p>
+          </div>
+        </div>
+
+        <article class="panel form-panel">
+          <div class="panel-header">
+            <div>
+              <h3 id="incomeFormTitle">Add income</h3>
+              <p class="muted">Record pocket money, earnings, or other income.</p>
+            </div>
+          </div>
+
+          <form id="incomeForm" class="form-grid">
+            <input type="hidden" id="incomeId">
+
+            <label class="field">
+              <span>Income source *</span>
+              <input id="incomeSource" type="text" maxlength="200"
+                placeholder="e.g. Monthly allowance" required>
+            </label>
+
+            <label class="field">
+              <span>Amount (₹) *</span>
+              <input id="incomeAmount" type="number" min="0.01"
+                max="1000000000" step="0.01" placeholder="0.00" required>
+            </label>
+
+            <label class="field">
+              <span>Date received *</span>
+              <input id="incomeDate" type="date" required>
+            </label>
+
+            <div class="form-actions">
+              <button class="button button-primary" id="incomeSubmit"
+                type="submit">Save income</button>
+              <button class="button button-secondary" id="incomeCancel"
+                type="button" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Income history</h3>
+              <p class="muted">Your recorded income sources.</p>
+            </div>
+            <span class="count-pill" id="incomeCount">0 records</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Date</th>
+                  <th class="align-right">Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="incomeTableBody">
+                <tr><td colspan="4" class="empty-state">Loading income...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="page" id="page-budgets">
+        <div class="section-intro">
+          <div>
+            <h2>Monthly budgets</h2>
+            <p class="muted">Set limits for each expense category.</p>
+          </div>
+        </div>
+
+        <article class="panel form-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Set a category budget</h3>
+              <p class="muted">Save a separate spending limit for each month.</p>
+            </div>
+          </div>
+
+          <form id="budgetForm" class="form-grid">
+            <label class="field">
+              <span>Expense category *</span>
+              <select id="budgetCategory" required>
+                <option value="">Choose a category</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Monthly limit (₹) *</span>
+              <input id="budgetAmount" type="number" min="0.01"
+                max="1000000000" step="0.01" placeholder="5000" required>
+            </label>
+
+            <label class="field">
+              <span>Budget month *</span>
+              <input id="budgetMonth" type="month" required>
+            </label>
+
+            <div class="form-actions">
+              <button class="button button-primary" type="submit">
+                Save budget
+              </button>
+            </div>
+          </form>
+        </article>
+
+        <div id="budgetCards" class="budget-grid">
+          <article class="panel"><p class="empty-state">Loading budgets...</p></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-reports">
+        <div class="section-intro">
+          <div>
+            <h2>Financial reports</h2>
+            <p class="muted">Understand your income and spending patterns.</p>
+          </div>
+          <button class="button button-secondary" id="exportReport"
+            type="button">Export CSV</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-heading"><span>Income</span><span>↗</span></div>
+            <p class="stat-value" id="reportIncome">₹0.00</p>
+          </article>
+          <article class="stat-card">
+            <div class="stat-heading"><span>Expenses</span><span>↘</span></div>
+            <p class="stat-value" id="reportExpenses">₹0.00</p>
+          </article>
+          <article class="stat-card">
+            <div class="stat-heading"><span>Net balance</span><span>₹</span></div>
+            <p class="stat-value" id="reportBalance">₹0.00</p>
+          </article>
+          <article class="stat-card">
+            <div class="stat-heading"><span>Total budget</span><span>◷</span></div>
+            <p class="stat-value" id="reportBudget">₹0.00</p>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Category breakdown</h3>
+              <p class="muted">Spending totals for the selected month.</p>
+            </div>
+          </div>
+          <div id="reportChart" class="category-chart">
+            <p class="empty-state">Loading report...</p>
+          </div>
+        </article>
+      </section>
+
+      <footer class="main-footer">
+        <span>ExpenseFlow</span>
+        <span>Spend thoughtfully. Save consistently.</span>
+      </footer>
+    </main>
+  </div>
+
+  <dialog id="confirmDialog" class="confirm-dialog">
+    <form method="dialog">
+      <h3>Delete this record?</h3>
+      <p>This action cannot be undone.</p>
+      <div class="form-actions">
+        <button class="button button-secondary" value="cancel">Cancel</button>
+        <button class="button button-danger" id="confirmDelete"
+          value="confirm">Delete</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
